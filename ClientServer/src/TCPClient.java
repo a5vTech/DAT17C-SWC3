@@ -3,49 +3,60 @@ import java.net.*;
 import java.util.Scanner;
 
 class TCPClient {
+    static String username;
+    static String serverIp;
+    static String serverPort;
+    static Socket socket;
+    static Scanner inputFromKeyboard = new Scanner(System.in);
+
+    public static void main(String[] args) {
+        makeConnection();
+
+    }
+
+    public static void makeConnection() {
+        System.out.println("=============Client=============");
+        System.out.print("Please enter the ip of the server: ");
+        serverIp = inputFromKeyboard.nextLine();
+        System.out.print("Please enter the servers port: ");
+        serverPort = inputFromKeyboard.next();
+        System.out.print("Please enter your desired username: ");
+        inputFromKeyboard.nextLine();
+        username = inputFromKeyboard.nextLine();
+        System.out.print("Trying to connect to the server");
+        //Adding connecting animation
+        loadingAnimation();
 
 
-    public static void main(String args[]) throws Exception {
-        int clientNumber = 0;
-        System.out.println("starting TCPClient main");
-        String sentence;
+        try {
+            socket = new Socket(serverIp, Integer.parseInt(serverPort));
+            System.out.println("\nConnected to the server successfully");
+            System.out.println("====================================");
+            System.out.print("\nTrying to connect to chat");
+            loadingAnimation();
 
-        Scanner inFromUser = new Scanner(System.in);
+            BufferedReader receiveFromServer = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            DataOutputStream sendToServer = new DataOutputStream(socket.getOutputStream());
 
-        System.out.println("trying to connect");
-        //   Socket clientSocket = new Socket("10.111.176.99", 5656);
-        //   Socket clientSocket = new Socket("10.111.176.99", 5656); //SEAN
-        Socket clientSocket = new Socket("127.0.0.1", 5656); //JESPER
-        System.out.println("we are connected");
-
-        DataOutputStream outToServer = new DataOutputStream(clientSocket.getOutputStream());
-        BufferedReader inFromServer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+            sendToServer.writeBytes("JOIN " + username + ", " + serverIp + ":" + serverPort + '\n');
 
 
-        System.out.println("Please enter the following cmd to join the server!");
-        System.out.println("The syntax is: JOIN <<username>>, <<ip>>:<<port>>");
-        boolean sentinel = false;
-        while (!sentinel) {
-            System.out.print("Please type your text: ");
-            sentence = inFromUser.nextLine();
-            outToServer.writeBytes(sentence +"'\n'");
-
-            if (sentence.equalsIgnoreCase("quit")) {
-                sentinel = true;
-                System.out.println("QUITTING");
-                clientSocket.close();
-            } else {
-                sentence = inFromServer.readLine();
-                System.out.println("FROM SERVER: " + sentence);
-
-                if (sentence.equalsIgnoreCase("quit")) {
-                    sentinel = true;
-                    System.out.println("QUITTING");
-                    clientSocket.close();
-                }
-            }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
 
+
+    }
+
+    private static void loadingAnimation() {
+        for (int i = 0; i < 5; i++) {
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            System.out.print(".");
+        }
     }
 
 }

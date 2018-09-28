@@ -14,7 +14,7 @@ public class TCPServer {
     }
 
     public static void main(String[] var0) throws Exception {
-        System.out.println("starting TCP Server main program");
+        System.out.println("starting TCP NewServer main program");
         ServerSocket var3 = new ServerSocket(5656);
         System.out.println("we have a socket");
         BufferedReader var4 = new BufferedReader(new InputStreamReader(System.in));
