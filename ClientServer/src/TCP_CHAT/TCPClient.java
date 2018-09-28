@@ -1,3 +1,5 @@
+package TCP_CHAT;
+
 import java.io.*;
 import java.net.*;
 import java.util.Scanner;
