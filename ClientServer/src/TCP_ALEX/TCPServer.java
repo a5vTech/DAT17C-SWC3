@@ -1,14 +1,17 @@
 package TCP_ALEX;
+
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Created by coag on 27-09-2018.
  */
 public class TCPServer {
+    static Set<String> usernames = new HashSet<>();
+
     public static void main(String[] args) {
         System.out.println("=============SERVER==============");
 
@@ -17,33 +20,32 @@ public class TCPServer {
 
         try {
             ServerSocket server = new ServerSocket(PORT_LISTEN);
-
             System.out.println("Server starting...\n");
 
-
-            Socket socket = server.accept();
-            System.out.println("Client connected");
-            String clientIp = socket.getInetAddress().getHostAddress();
-            System.out.println("IP: " + clientIp);
-            System.out.println("PORT: " + socket.getPort());
-
-            InputStream input = socket.getInputStream();
-            OutputStream output = socket.getOutputStream();
-
-            byte[] dataIn = new byte[1024];
-            input.read(dataIn);
-            String msgIn = new String(dataIn);
-            msgIn = msgIn.trim();
+            while (true) {
+                Socket socket = server.accept();
+                System.out.println("Client connected");
+                String clientIp = socket.getInetAddress().getHostAddress();
+                System.out.println("IP: " + clientIp);
+                System.out.println("PORT: " + socket.getPort());
+                ServerT thread = new ServerT(socket, clientIp);
+                Thread client = new Thread(thread);
+                client.start();
 
 
-            System.out.println("IN -->" + msgIn + "<--");
-
-            String msgToSend = "SERVER: [sender:" + clientIp + " ]: " + msgIn;
-            byte[] dataToSend = msgToSend.getBytes();
-            output.write(dataToSend);
-
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+
+    public static Boolean addUser(String username) {
+       return usernames.add(username);
+    }
+
+
+    public static Set<String> getusers() {
+        return usernames;
     }
 }
