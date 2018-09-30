@@ -1,8 +1,11 @@
 package TCP_ALEX;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -11,11 +14,52 @@ import java.util.Set;
  */
 public class TCPServer {
     static Set<String> usernames = new HashSet<>();
+    static ArrayList<ServerT> clients = new ArrayList<>();
 
     public static void main(String[] args) {
         System.out.println("=============SERVER==============");
 
         final int PORT_LISTEN = 5656;
+     /*   Thread alive = new Thread(() -> {
+
+            while (true) {
+
+
+                try {
+                    Thread.sleep(60000);
+                    if (clients.size() >= 1) {
+                        for (int i = 0; i < clients.size(); i++) {
+                            if (System.currentTimeMillis() - clients.get(i).lastHeartbeat > 120000 && clients.get(i).username != null) {
+                                TCPServer.removeUser(clients.get(i).username);
+                                clients.remove(i);
+                                break;
+                            } else if (System.currentTimeMillis() - clients.get(i).lastHeartbeat > 120000 && clients.get(i).username == null) {
+                                clients.remove(i);
+                                break;
+                            }
+
+                        }
+                    }
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+
+
+                String inactiveMsg = "You have been disconnected due to inactivity or loss of connection";
+                byte[] dataToSend;
+                OutputStream output = null;
+                try {
+                    output = socket.getOutputStream();
+                    dataToSend = inactiveMsg.getBytes();
+                    output.write(dataToSend);
+                    socket.close();
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+        alive.start();*/
 
 
         try {
@@ -30,8 +74,8 @@ public class TCPServer {
                 System.out.println("PORT: " + socket.getPort());
                 ServerT thread = new ServerT(socket, clientIp);
                 Thread client = new Thread(thread);
+                clients.add(thread);
                 client.start();
-
 
             }
         } catch (IOException e) {
@@ -41,11 +85,58 @@ public class TCPServer {
 
 
     public static Boolean addUser(String username) {
-       return usernames.add(username);
+        return usernames.add(username);
+    }
+
+    public static Boolean removeUser(String username) {
+        return usernames.remove(username);
+    }
+
+    public static Boolean removeClientSocket(ServerT client) {
+        return clients.remove(client);
     }
 
 
     public static Set<String> getusers() {
         return usernames;
+    }
+
+
+    @SuppressWarnings("Duplicates")
+    public static void broadcast(ServerT client, String msgToSend) {
+        for (int i = 0; i < clients.size(); i++) {
+            if (!clients.get(i).equals(client)) {
+                try {
+                    byte[] dataToSend;
+                    Socket socket = clients.get(i).socket;
+                    OutputStream output = socket.getOutputStream();
+                    dataToSend = msgToSend.getBytes();
+                    output.write(dataToSend);
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+            }
+        }
+    }
+
+    @SuppressWarnings("Duplicates")
+    public static void broadcastActiveUsers(String msgToSend) {
+        for (int i = 0; i < clients.size(); i++) {
+
+            try {
+                byte[] activeUsers;
+                Socket socket = clients.get(i).socket;
+                OutputStream output = socket.getOutputStream();
+                activeUsers = msgToSend.getBytes();
+                output.write(activeUsers);
+
+            } catch (IOException e) {
+                e.printStackTrace();
+
+
+            }
+        }
     }
 }

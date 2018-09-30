@@ -43,6 +43,8 @@ public class TCPClient {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        ReceiverClient receiver = new ReceiverClient(socket);
+        Thread read = new Thread(receiver);
 
         Boolean joinedChat = false;
         while (true) {
@@ -77,36 +79,49 @@ public class TCPClient {
                         System.out.println("You have joined the chat! ");
                         joinedChat = true;
                     }
+                    //Start reading from server
 
-
+                    if(joinedChat){
+                        read.start();
+                    }
                 }
+
+
 
                 //Message to send
                 sc = new Scanner(System.in);
-                System.out.println("What do you want to send? ");
+
                 String msgToSend = sc.nextLine();
-                if (!msgToSend.startsWith("QUIT") || !msgToSend.startsWith("IMAV")) {
+                if (!msgToSend.equals("QUIT") && !msgToSend.startsWith("IMAV")) {
                     msgToSend = "DATA " + username + ": " + msgToSend;
+
+                    //Convert message to bytes
+                    byte[] dataToSend = msgToSend.getBytes();
+                    //Send data to server
+
+                    output.write(dataToSend);
+                } else if (msgToSend.equals("QUIT")) {
+                    System.out.println("Shutting down chat");
+                    //Convert message to bytes
+                    byte[] dataToSend = msgToSend.getBytes();
+                    //Send data to server
+
+                    output.write(dataToSend);
+                    System.exit(0);
                 }
 
-                //Convert message to bytes
-                byte[] dataToSend = msgToSend.getBytes();
-                //Send data to server
 
-                output.write(dataToSend);
-
-
-                //Prepare byte array to store incoming message
-                byte[] dataIn = new byte[1024];
-                //Read data from server into the byte array
-                input.read(dataIn);
-                //Convert data to msg
-                String msgIn = new String(dataIn);
-                //Remove trailing blank spaces
-                msgIn = msgIn.trim();
-
-
-                System.out.println("IN -->" + msgIn + "<--");
+//                //Prepare byte array to store incoming message
+//                byte[] dataIn = new byte[1024];
+//                //Read data from server into the byte array
+//                input.read(dataIn);
+//                //Convert data to msg
+//                String msgIn = new String(dataIn);
+//                //Remove trailing blank spaces
+//                msgIn = msgIn.trim();
+//
+//
+//                System.out.println("IN -->" + msgIn + "<--");
 
             } catch (UnknownHostException e) {
                 e.printStackTrace();
@@ -114,5 +129,27 @@ public class TCPClient {
                 e.printStackTrace();
             }
         }
+    }
+
+    public void checkUsername(String username){
+        Scanner inputUsername = new Scanner(System.in);
+        boolean verified = false;
+
+        if(username.length() <= 12 && !username.contains(" ")){
+            verified = true;
+        }
+
+        while (!verified){
+            System.out.println("Username does not meet the requirements!");
+            System.out.println("Max length is: 12\nCan contain letters, digits, '-' and '_'");
+            System.out.print("New username: ");
+            username = inputUsername.next();
+        }
+
+
+        if(username.length() <= 12 && !username.contains(" ")){
+            verified = true;
+        }
+
     }
 }

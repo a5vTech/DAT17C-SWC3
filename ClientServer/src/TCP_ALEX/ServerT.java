@@ -4,22 +4,28 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.time.LocalDate;
+import java.util.Date;
 
 public class ServerT implements Runnable {
     Socket socket;
     String clientIp;
     String username;
+    long lastHeartbeat = 0;
 
 
     public ServerT(Socket socket, String ip) {
         this.socket = socket;
         this.clientIp = ip;
+        lastHeartbeat = System.currentTimeMillis();
     }
 
 
     @Override
     public void run() {
-        while (true) {
+
+
+        while (!socket.isClosed()) {
             try {
                 InputStream input = socket.getInputStream();
                 OutputStream output = socket.getOutputStream();
@@ -58,20 +64,23 @@ public class ServerT implements Runnable {
                         //To log commands run towards the server
                         System.out.println("IN -->" + msgIn + "<--");
                         //TODO Add broadcast method (So other clients can receive messages)
+                        TCPServer.broadcast(this, msgIn.substring(5));
 
-
-                        msgToSend = "SERVER: [sender:" + clientIp + " ]: " + msgIn.substring(5);
-                        dataToSend = msgToSend.getBytes();
-                        output.write(dataToSend);
+//                        msgToSend = "SERVER: [sender:" + clientIp + " ]: " + msgIn.substring(5);
+//                        dataToSend = msgToSend.getBytes();
+//                        output.write(dataToSend);
                         break;
                     //I am alive
                     case "IMAV":
-
+                        lastHeartbeat = System.currentTimeMillis();
                         break;
 
                     //Quit chat
                     case "QUIT":
+                        TCPServer.removeUser(username);
+                        TCPServer.removeClientSocket(this);
                         socket.close();
+
                         break;
 
                     default:
@@ -88,6 +97,7 @@ public class ServerT implements Runnable {
                 ex.printStackTrace();
             }
         }
+
     }
 
 
