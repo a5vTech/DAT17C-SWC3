@@ -20,23 +20,40 @@ public class TCPServer {
         System.out.println("=============SERVER==============");
 
         final int PORT_LISTEN = 5656;
-     /*   Thread alive = new Thread(() -> {
+        Thread alive = new Thread(() -> {
 
             while (true) {
 
 
                 try {
-                    Thread.sleep(60000);
+                    int timeout = 20000;
+                    Thread.sleep(64000);
                     if (clients.size() >= 1) {
                         for (int i = 0; i < clients.size(); i++) {
-                            if (System.currentTimeMillis() - clients.get(i).lastHeartbeat > 120000 && clients.get(i).username != null) {
-                                TCPServer.removeUser(clients.get(i).username);
-                                clients.remove(i);
-                                break;
-                            } else if (System.currentTimeMillis() - clients.get(i).lastHeartbeat > 120000 && clients.get(i).username == null) {
-                                clients.remove(i);
-                                break;
+                            if (System.currentTimeMillis() - clients.get(i).lastHeartbeat > timeout && clients.get(i).username != null) {
+
+
+                                String inactiveMsg = "You have been disconnected due to inactivity or loss of connection";
+                                byte[] dataToSend;
+                                OutputStream output = null;
+                                try {
+                                    output = clients.get(i).socket.getOutputStream();
+                                    dataToSend = inactiveMsg.getBytes();
+                                    output.write(dataToSend);
+                                    TCPServer.removeUser(clients.get(i).username);
+//                                    if (System.currentTimeMillis() - clients.get(i).lastHeartbeat > timeout && clients.get(i).username == null) {
+                                    System.out.println(clients);
+                                    clients.get(i).socket.close();
+                                    clients.remove(i);
+                                    System.out.println(clients);
+// }
+
+
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
                             }
+
 
                         }
                     }
@@ -45,21 +62,9 @@ public class TCPServer {
                 }
 
 
-                String inactiveMsg = "You have been disconnected due to inactivity or loss of connection";
-                byte[] dataToSend;
-                OutputStream output = null;
-                try {
-                    output = socket.getOutputStream();
-                    dataToSend = inactiveMsg.getBytes();
-                    output.write(dataToSend);
-                    socket.close();
-
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
             }
         });
-        alive.start();*/
+        alive.start();
 
 
         try {
@@ -76,6 +81,7 @@ public class TCPServer {
                 Thread client = new Thread(thread);
                 clients.add(thread);
                 client.start();
+
 
             }
         } catch (IOException e) {

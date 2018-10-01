@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.net.SocketException;
 import java.time.LocalDate;
 import java.util.Date;
 
@@ -32,6 +33,7 @@ public class ServerT implements Runnable {
 
                 //Receive msg from client
                 byte[] dataIn = new byte[1024];
+
                 input.read(dataIn);
                 String msgIn = new String(dataIn);
                 msgIn = msgIn.trim();
@@ -43,13 +45,13 @@ public class ServerT implements Runnable {
 
                     //Join chat
                     case "JOIN":
-//TODO check for correct join message and for duplicate username
                         int commaIndex = msgIn.indexOf(",");
 
                         username = msgIn.substring(5, commaIndex);
 
                         if (TCPServer.addUser(username)) {
                             msgToSend = "J_OK";
+
                         } else {
                             msgToSend = "J_ER 5:A user with that name already exists!";
                         }
@@ -57,13 +59,18 @@ public class ServerT implements Runnable {
                         dataToSend = msgToSend.getBytes();
                         output.write(dataToSend);
 
+                        if(msgToSend.equals("J_OK")){
+                            msgToSend = "Currently connected users: "+ TCPServer.usernames.toString();
+                            dataToSend = msgToSend.getBytes();
+                            output.write(dataToSend);
+                        }
+
                         break;
 
                     //Message
                     case "DATA":
                         //To log commands run towards the server
                         System.out.println("IN -->" + msgIn + "<--");
-                        //TODO Add broadcast method (So other clients can receive messages)
                         TCPServer.broadcast(this, msgIn.substring(5));
 
 //                        msgToSend = "SERVER: [sender:" + clientIp + " ]: " + msgIn.substring(5);
@@ -73,6 +80,7 @@ public class ServerT implements Runnable {
                     //I am alive
                     case "IMAV":
                         lastHeartbeat = System.currentTimeMillis();
+                        System.out.println(msgIn);
                         break;
 
                     //Quit chat
@@ -92,6 +100,8 @@ public class ServerT implements Runnable {
 
 //                System.out.println("USERS CONNECTED: ");
 //                System.out.println(TCPServer.getusers());
+
+            } catch (SocketException ex) {
 
             } catch (IOException ex) {
                 ex.printStackTrace();

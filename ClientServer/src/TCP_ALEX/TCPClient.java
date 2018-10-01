@@ -3,10 +3,7 @@ package TCP_ALEX;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.Inet4Address;
-import java.net.InetAddress;
-import java.net.Socket;
-import java.net.UnknownHostException;
+import java.net.*;
 import java.util.Scanner;
 
 /**
@@ -45,17 +42,41 @@ public class TCPClient {
         }
         ReceiverClient receiver = new ReceiverClient(socket);
         Thread read = new Thread(receiver);
+        Thread IMAV = new Thread(() -> {
+            Boolean run = true;
+            while (run) {
+                try {
+                    Thread.sleep(30000);
+                    OutputStream outAlive = socket.getOutputStream();
+                    String iAmAlive = "IMAV";
+                    byte[] dataToSend = iAmAlive.getBytes();
+                    //Send data to server
+
+                   try {
+                       outAlive.write(dataToSend);
+                   }catch (SocketException ex){
+                       ex.printStackTrace();
+                   }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+
+
+            }
+        });
 
         Boolean joinedChat = false;
-        while (true) {
+        while (!socket.isClosed()) {
             try {
 
 
-                //Creaate input and output readers
+                //Create input and output readers
                 InputStream input = socket.getInputStream();
                 OutputStream output = socket.getOutputStream();
-                while (!joinedChat){
-                    String joinMsg = "JOIN " + username + "," + IP_SERVER_STR + ":" + PORT_SERVER;
+                while (!joinedChat) {
+                    String joinMsg = "JOIN " + username + ", " + IP_SERVER_STR + ":" + PORT_SERVER;
                     //Convert message to bytes
                     byte[] dataToSend = joinMsg.getBytes();
                     //Send data to server
@@ -70,7 +91,7 @@ public class TCPClient {
                     //Remove trailing blank spaces
                     msgIn = msgIn.trim();
 
-                    if (!msgIn.equals("J_OK")) {
+                    if (!msgIn.substring(0, 4).equalsIgnoreCase("J_OK")) {
                         System.out.println(msgIn.substring(5));
                         System.out.print("Please try another name: ");
                         username = sc.next();
@@ -79,13 +100,14 @@ public class TCPClient {
                         System.out.println("You have joined the chat! ");
                         joinedChat = true;
                     }
+
                     //Start reading from server
 
-                    if(joinedChat){
+                    if (joinedChat) {
                         read.start();
+                        IMAV.start();
                     }
                 }
-
 
 
                 //Message to send
@@ -102,26 +124,10 @@ public class TCPClient {
                     output.write(dataToSend);
                 } else if (msgToSend.equals("QUIT")) {
                     System.out.println("Shutting down chat");
-                    //Convert message to bytes
-                    byte[] dataToSend = msgToSend.getBytes();
-                    //Send data to server
 
-                    output.write(dataToSend);
+                    socket.close();
                     System.exit(0);
                 }
-
-
-//                //Prepare byte array to store incoming message
-//                byte[] dataIn = new byte[1024];
-//                //Read data from server into the byte array
-//                input.read(dataIn);
-//                //Convert data to msg
-//                String msgIn = new String(dataIn);
-//                //Remove trailing blank spaces
-//                msgIn = msgIn.trim();
-//
-//
-//                System.out.println("IN -->" + msgIn + "<--");
 
             } catch (UnknownHostException e) {
                 e.printStackTrace();
@@ -131,15 +137,15 @@ public class TCPClient {
         }
     }
 
-    public void checkUsername(String username){
+    public void checkUsername(String username) {
         Scanner inputUsername = new Scanner(System.in);
         boolean verified = false;
 
-        if(username.length() <= 12 && !username.contains(" ")){
+        if (username.length() <= 12 && !username.contains(" ")) {
             verified = true;
         }
 
-        while (!verified){
+        while (!verified) {
             System.out.println("Username does not meet the requirements!");
             System.out.println("Max length is: 12\nCan contain letters, digits, '-' and '_'");
             System.out.print("New username: ");
@@ -147,7 +153,7 @@ public class TCPClient {
         }
 
 
-        if(username.length() <= 12 && !username.contains(" ")){
+        if (username.length() <= 12 && !username.contains(" ")) {
             verified = true;
         }
 

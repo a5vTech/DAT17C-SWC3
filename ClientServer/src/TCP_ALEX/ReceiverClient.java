@@ -15,19 +15,23 @@ public class ReceiverClient implements Runnable {
 
     @Override
     public void run() {
-        while (true){
+        Boolean run = true;
+        while (run) {
             try {
                 InputStream input = socket.getInputStream();
                 byte[] dataIn = new byte[1024];
                 input.read(dataIn);
                 String msgIn = new String(dataIn);
+
                 msgIn = msgIn.trim();
-                System.out.print(msgIn+"\n");
+                if (msgIn.equals("")) {
+                    run = false;
+                }
+                System.out.print(msgIn + "\n");
 
             } catch (IOException e) {
                 e.printStackTrace();
             }
-
 
 
         }
