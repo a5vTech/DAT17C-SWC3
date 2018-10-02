@@ -41,74 +41,94 @@ public class ServerT implements Runnable {
                 String msgToSend = "";
                 byte[] dataToSend;
 
-                switch (msgIn.substring(0, 4)) {
+                if (msgIn.length() >= 4){
+                    switch (msgIn.substring(0, 4)) {
 
-                    //Join chat
-                    case "JOIN":
-                        int commaIndex = msgIn.indexOf(",");
+                        //Join chat
+                        case "JOIN":
+                            int commaIndex = msgIn.indexOf(",");
 
-                        username = msgIn.substring(5, commaIndex);
+                            username = msgIn.substring(5, commaIndex);
 
-                        if (TCPServer.addUser(username)) {
-                            msgToSend = "J_OK";
+                            if (TCPServer.addUser(username)) {
+                                msgToSend = "J_OK";
 
-                        } else {
-                            msgToSend = "J_ER 5:A user with that name already exists!";
-                        }
+                            } else {
+                                msgToSend = "J_ER 5:A user with that name already exists!";
+                            }
 
-                        dataToSend = msgToSend.getBytes();
-                        output.write(dataToSend);
-
-                        if(msgToSend.equals("J_OK")){
-                            msgToSend = "Currently connected users: "+ TCPServer.usernames.toString();
                             dataToSend = msgToSend.getBytes();
                             output.write(dataToSend);
-                        }
 
-                        break;
+                            if (msgToSend.equals("J_OK")) {
+                                String activeUsers = "LIST";
 
-                    //Message
-                    case "DATA":
-                        //To log commands run towards the server
-                        System.out.println("IN -->" + msgIn + "<--");
-                        TCPServer.broadcast(this, msgIn.substring(5));
+                               for (String username: TCPServer.usernames){
+                                   activeUsers += " " +username;
+                               }
+
+
+
+                                msgToSend = activeUsers;
+                                TCPServer.broadcast(this,msgToSend);
+                                dataToSend = msgToSend.getBytes();
+                                output.write(dataToSend);
+                            }
+
+                            break;
+
+                        //Message
+                        case "DATA":
+                            //To log commands run towards the server
+                            System.out.println("IN -->" + msgIn + "<--");
+                            TCPServer.broadcast(this, msgIn.substring(5));
 
 //                        msgToSend = "SERVER: [sender:" + clientIp + " ]: " + msgIn.substring(5);
 //                        dataToSend = msgToSend.getBytes();
 //                        output.write(dataToSend);
-                        break;
-                    //I am alive
-                    case "IMAV":
-                        lastHeartbeat = System.currentTimeMillis();
-                        System.out.println(msgIn);
-                        break;
+                            break;
+                        //I am alive
+                        case "IMAV":
+                            lastHeartbeat = System.currentTimeMillis();
+                            System.out.println(msgIn);
+                            break;
 
-                    //Quit chat
-                    case "QUIT":
-                        TCPServer.removeUser(username);
-                        TCPServer.removeClientSocket(this);
-                        socket.close();
+                        //Quit chat
+                        case "QUIT":
+                            TCPServer.removeUser(username);
+                            TCPServer.removeClientSocket(this);
+                            String activeUsers = "LIST";
 
-                        break;
+                            for (String username: TCPServer.usernames){
+                                activeUsers += " " +username;
+                            }
 
-                    default:
+                            msgToSend = activeUsers;
+                            TCPServer.broadcast(this,msgToSend);
+                            dataToSend = msgToSend.getBytes();
+                            output.write(dataToSend);
+                            socket.close();
 
-                        break;
+                            break;
 
-                }
+                        default:
 
+                            break;
+
+                    }
+            }
 
 //                System.out.println("USERS CONNECTED: ");
 //                System.out.println(TCPServer.getusers());
 
-            } catch (SocketException ex) {
+                } catch(SocketException ex){
 
-            } catch (IOException ex) {
-                ex.printStackTrace();
+                } catch(IOException ex){
+//                    ex.printStackTrace();
+                }
             }
-        }
 
-    }
+        }
 
 
     public String getClientIp() {

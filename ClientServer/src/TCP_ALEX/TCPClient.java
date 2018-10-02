@@ -21,10 +21,9 @@ public class TCPClient {
 
         System.out.print("What is the PORT for the server: ");
         int portToConnect = args.length >= 2 ? Integer.parseInt(args[1]) : sc.nextInt();
-
-        System.out.print("What is your username: ");
-        String username = sc.next();
-
+//        System.out.print("Please enter your desired username: ");
+       String username = checkUsername();
+//        String username = sc.next();
         final int PORT_SERVER = portToConnect;
         final String IP_SERVER_STR = ipToConnect.equals("0") ? "127.0.0.1" : ipToConnect;
         System.out.println("\nConnecting...");
@@ -43,8 +42,7 @@ public class TCPClient {
         ReceiverClient receiver = new ReceiverClient(socket);
         Thread read = new Thread(receiver);
         Thread IMAV = new Thread(() -> {
-            Boolean run = true;
-            while (run) {
+            while (!socket.isClosed()) {
                 try {
                     Thread.sleep(30000);
                     OutputStream outAlive = socket.getOutputStream();
@@ -52,15 +50,15 @@ public class TCPClient {
                     byte[] dataToSend = iAmAlive.getBytes();
                     //Send data to server
 
-                   try {
-                       outAlive.write(dataToSend);
-                   }catch (SocketException ex){
-                       ex.printStackTrace();
-                   }
+                    try {
+                        outAlive.write(dataToSend);
+                    } catch (SocketException ex) {
+                        ex.printStackTrace();
+                    }
                 } catch (IOException e) {
-                    e.printStackTrace();
+
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
+//                    e.printStackTrace();
                 }
 
 
@@ -94,7 +92,7 @@ public class TCPClient {
                     if (!msgIn.substring(0, 4).equalsIgnoreCase("J_OK")) {
                         System.out.println(msgIn.substring(5));
                         System.out.print("Please try another name: ");
-                        username = sc.next();
+                        username = checkUsername();
 
                     } else {
                         System.out.println("You have joined the chat! ");
@@ -123,8 +121,9 @@ public class TCPClient {
 
                     output.write(dataToSend);
                 } else if (msgToSend.equals("QUIT")) {
-                    System.out.println("Shutting down chat");
 
+                    output.write(msgToSend.getBytes());
+                    System.out.println("Shutting down chat");
                     socket.close();
                     System.exit(0);
                 }
@@ -132,30 +131,34 @@ public class TCPClient {
             } catch (UnknownHostException e) {
                 e.printStackTrace();
             } catch (IOException e) {
-                e.printStackTrace();
+                try {
+                    socket.close();
+                    System.out.println("Connection closed");
+                } catch (IOException e1) {
+                    System.out.println("Connection failed to close");
+                }
             }
         }
     }
 
-    public void checkUsername(String username) {
+    public static String checkUsername() {
         Scanner inputUsername = new Scanner(System.in);
         boolean verified = false;
-
-        if (username.length() <= 12 && !username.contains(" ")) {
-            verified = true;
-        }
-
+        String username = "";
         while (!verified) {
-            System.out.println("Username does not meet the requirements!");
-            System.out.println("Max length is: 12\nCan contain letters, digits, '-' and '_'");
-            System.out.print("New username: ");
+            System.out.print("Please enter your desired username: ");
             username = inputUsername.next();
-        }
+            if (username.length() >12 ||!username.matches("[A-Z-ÆØÅa-zæøå0-9_-]+") ) {
+                System.out.println("Username does not meet the requirements!");
+                System.out.println("Max length is: 12\nCan contain letters, digits, '-' and '_'");
+                verified = false;
+            } else {
 
+                verified = true;
+            }
 
-        if (username.length() <= 12 && !username.contains(" ")) {
-            verified = true;
         }
+        return username;
 
     }
 }

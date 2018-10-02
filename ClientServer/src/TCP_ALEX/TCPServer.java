@@ -23,35 +23,38 @@ public class TCPServer {
         Thread alive = new Thread(() -> {
 
             while (true) {
+                ArrayList<Integer> clientsToRemove = new ArrayList<>();
 
 
                 try {
-                    int timeout = 20000;
-                    Thread.sleep(64000);
+                    int timeout = 60000; //Timeout = 1 min
+                    Thread.sleep(10000);
                     if (clients.size() >= 1) {
                         for (int i = 0; i < clients.size(); i++) {
-                            if (System.currentTimeMillis() - clients.get(i).lastHeartbeat > timeout && clients.get(i).username != null) {
+                            if (System.currentTimeMillis() - clients.get(i).lastHeartbeat > timeout) {
 
-
-                                String inactiveMsg = "You have been disconnected due to inactivity or loss of connection";
-                                byte[] dataToSend;
-                                OutputStream output = null;
-                                try {
-                                    output = clients.get(i).socket.getOutputStream();
-                                    dataToSend = inactiveMsg.getBytes();
-                                    output.write(dataToSend);
-                                    TCPServer.removeUser(clients.get(i).username);
+//
+//                                String inactiveMsg = "You have been disconnected due to inactivity or loss of connection";
+//                                byte[] dataToSend;
+//                                OutputStream output = null;
+//                                try {
+//                                    output = clients.get(i).socket.getOutputStream();
+//                                    dataToSend = inactiveMsg.getBytes();
+//                                    output.write(dataToSend);
+//                                    TCPServer.removeUser(clients.get(i).username);
 //                                    if (System.currentTimeMillis() - clients.get(i).lastHeartbeat > timeout && clients.get(i).username == null) {
                                     System.out.println(clients);
-                                    clients.get(i).socket.close();
-                                    clients.remove(i);
-                                    System.out.println(clients);
+                                    clientsToRemove.add(i);
+
+//                                    clients.get(i).socket.close();
+//                                    clients.remove(i);
+
 // }
 
 
-                                } catch (IOException e) {
-                                    e.printStackTrace();
-                                }
+//                                } catch (IOException e) {
+//                                    e.printStackTrace();
+//                                }
                             }
 
 
@@ -59,6 +62,28 @@ public class TCPServer {
                     }
                 } catch (InterruptedException e) {
                     e.printStackTrace();
+                }
+
+
+                for (int i = 0; i < clientsToRemove.size(); i++) {
+                    int temp = clientsToRemove.get(i);
+                    try {
+                        String inactiveMsg = "You have been disconnected due to inactivity or loss of connection";
+                        byte[] dataToSend;
+                        OutputStream output = null;
+                        output = clients.get(i).socket.getOutputStream();
+                        dataToSend = inactiveMsg.getBytes();
+                        output.write(dataToSend);
+
+                        usernames.remove(clients.get(temp).getUsername());
+                        clients.get(i).socket.close();
+                        clients.remove(temp);
+                        TCPServer.broadcast(null, "Currently connected users: " + usernames.toString());
+                        System.out.println(clients);
+                    } catch (IOException e) {
+//                        e.printStackTrace();
+                    }
+
                 }
 
 
@@ -85,7 +110,7 @@ public class TCPServer {
 
             }
         } catch (IOException e) {
-            e.printStackTrace();
+//            e.printStackTrace();
         }
     }
 
@@ -108,41 +133,41 @@ public class TCPServer {
     }
 
 
-    @SuppressWarnings("Duplicates")
     public static void broadcast(ServerT client, String msgToSend) {
         for (int i = 0; i < clients.size(); i++) {
             if (!clients.get(i).equals(client)) {
                 try {
-                    byte[] dataToSend;
-                    Socket socket = clients.get(i).socket;
-                    OutputStream output = socket.getOutputStream();
-                    dataToSend = msgToSend.getBytes();
-                    output.write(dataToSend);
+                    if(!clients.get(i).socket.isClosed()){
+                        byte[] dataToSend;
+                        Socket socket = clients.get(i).socket;
+                        OutputStream output = socket.getOutputStream();
+                        dataToSend = msgToSend.getBytes();
+                        output.write(dataToSend);
+
+                    }
 
                 } catch (IOException e) {
-                    e.printStackTrace();
+//                    e.printStackTrace();
                 }
 
             }
         }
     }
-
-    @SuppressWarnings("Duplicates")
-    public static void broadcastActiveUsers(String msgToSend) {
-        for (int i = 0; i < clients.size(); i++) {
-
-            try {
-                byte[] activeUsers;
-                Socket socket = clients.get(i).socket;
-                OutputStream output = socket.getOutputStream();
-                activeUsers = msgToSend.getBytes();
-                output.write(activeUsers);
-
-            } catch (IOException e) {
-                e.printStackTrace();
-
-
-            }
-        }
-    }
+//    public static void broadcastActiveUsers(String msgToSend) {
+//        for (int i = 0; i < clients.size(); i++) {
+//
+//            try {
+//                byte[] activeUsers;
+//                Socket socket = clients.get(i).socket;
+//                OutputStream output = socket.getOutputStream();
+//                activeUsers = msgToSend.getBytes();
+//                output.write(activeUsers);
+//
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//
+//
+//            }
+//        }
+//    }
 }
