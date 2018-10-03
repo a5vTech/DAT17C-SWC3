@@ -22,7 +22,7 @@ public class TCPClient {
         System.out.print("What is the PORT for the server: ");
         int portToConnect = args.length >= 2 ? Integer.parseInt(args[1]) : sc.nextInt();
 //        System.out.print("Please enter your desired username: ");
-       String username = checkUsername();
+        String username = checkUsername();
 //        String username = sc.next();
         final int PORT_SERVER = portToConnect;
         final String IP_SERVER_STR = ipToConnect.equals("0") ? "127.0.0.1" : ipToConnect;
@@ -56,6 +56,8 @@ public class TCPClient {
                         ex.printStackTrace();
                     }
                 } catch (IOException e) {
+                    System.out.println("CLIENT EXCEPTION ");
+                    e.printStackTrace();
 
                 } catch (InterruptedException e) {
 //                    e.printStackTrace();
@@ -91,7 +93,6 @@ public class TCPClient {
 
                     if (!msgIn.substring(0, 4).equalsIgnoreCase("J_OK")) {
                         System.out.println(msgIn.substring(5));
-                        System.out.print("Please try another name: ");
                         username = checkUsername();
 
                     } else {
@@ -148,7 +149,7 @@ public class TCPClient {
         while (!verified) {
             System.out.print("Please enter your desired username: ");
             username = inputUsername.next();
-            if (username.length() >12 ||!username.matches("[A-Z-ÆØÅa-zæøå0-9_-]+") ) {
+            if (username.length() > 12 || !username.matches("[A-Z-ÆØÅa-zæøå0-9_-]+")) {
                 System.out.println("Username does not meet the requirements!");
                 System.out.println("Max length is: 12\nCan contain letters, digits, '-' and '_'");
                 verified = false;

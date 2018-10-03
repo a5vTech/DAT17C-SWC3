@@ -3,23 +3,26 @@ package TCP_ALEX;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Created by coag on 27-09-2018.
+ * Created by Jesper Tang Petersen
  */
 public class TCPServer {
+    static final int PORT_LISTEN = 5656;
     static Set<String> usernames = new HashSet<>();
     static ArrayList<ServerT> clients = new ArrayList<>();
-
+    static String serverIp = "";
     public static void main(String[] args) {
         System.out.println("=============SERVER==============");
 
-        final int PORT_LISTEN = 5656;
+
         Thread alive = new Thread(() -> {
 
             while (true) {
@@ -33,28 +36,8 @@ public class TCPServer {
                         for (int i = 0; i < clients.size(); i++) {
                             if (System.currentTimeMillis() - clients.get(i).lastHeartbeat > timeout) {
 
-//
-//                                String inactiveMsg = "You have been disconnected due to inactivity or loss of connection";
-//                                byte[] dataToSend;
-//                                OutputStream output = null;
-//                                try {
-//                                    output = clients.get(i).socket.getOutputStream();
-//                                    dataToSend = inactiveMsg.getBytes();
-//                                    output.write(dataToSend);
-//                                    TCPServer.removeUser(clients.get(i).username);
-//                                    if (System.currentTimeMillis() - clients.get(i).lastHeartbeat > timeout && clients.get(i).username == null) {
-                                    System.out.println(clients);
-                                    clientsToRemove.add(i);
-
-//                                    clients.get(i).socket.close();
-//                                    clients.remove(i);
-
-// }
-
-
-//                                } catch (IOException e) {
-//                                    e.printStackTrace();
-//                                }
+//                                System.out.println(clients);
+                                clientsToRemove.add(i);
                             }
 
 
@@ -79,7 +62,7 @@ public class TCPServer {
                         clients.get(i).socket.close();
                         clients.remove(temp);
                         TCPServer.broadcast(null, "Currently connected users: " + usernames.toString());
-                        System.out.println(clients);
+//                        System.out.println(clients);
                     } catch (IOException e) {
 //                        e.printStackTrace();
                     }
@@ -93,15 +76,17 @@ public class TCPServer {
 
 
         try {
+            serverIp = InetAddress.getLocalHost().getHostAddress();
             ServerSocket server = new ServerSocket(PORT_LISTEN);
-            System.out.println("Server starting...\n");
+            System.out.println("Server starting...\nIP: "+serverIp+"\nPORT: "+ PORT_LISTEN+"\n");
+
 
             while (true) {
                 Socket socket = server.accept();
                 System.out.println("Client connected");
                 String clientIp = socket.getInetAddress().getHostAddress();
                 System.out.println("IP: " + clientIp);
-                System.out.println("PORT: " + socket.getPort());
+                System.out.println("PORT: " + socket.getPort()+"\n");
                 ServerT thread = new ServerT(socket, clientIp);
                 Thread client = new Thread(thread);
                 clients.add(thread);
@@ -110,7 +95,7 @@ public class TCPServer {
 
             }
         } catch (IOException e) {
-//            e.printStackTrace();
+            System.out.println("SERVER IO EXCEPTION IN MAIN");
         }
     }
 
@@ -137,7 +122,7 @@ public class TCPServer {
         for (int i = 0; i < clients.size(); i++) {
             if (!clients.get(i).equals(client)) {
                 try {
-                    if(!clients.get(i).socket.isClosed()){
+                    if (!clients.get(i).socket.isClosed()) {
                         byte[] dataToSend;
                         Socket socket = clients.get(i).socket;
                         OutputStream output = socket.getOutputStream();
@@ -153,21 +138,4 @@ public class TCPServer {
             }
         }
     }
-//    public static void broadcastActiveUsers(String msgToSend) {
-//        for (int i = 0; i < clients.size(); i++) {
-//
-//            try {
-//                byte[] activeUsers;
-//                Socket socket = clients.get(i).socket;
-//                OutputStream output = socket.getOutputStream();
-//                activeUsers = msgToSend.getBytes();
-//                output.write(activeUsers);
-//
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//
-//
-//            }
-//        }
-//    }
 }
