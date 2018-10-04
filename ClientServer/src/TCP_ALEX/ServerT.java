@@ -1,6 +1,5 @@
 package TCP_ALEX;
 
-import sun.net.ConnectionResetException;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -88,7 +87,7 @@ public class ServerT implements Runnable {
 
                         //Message
                         case "DATA":
-                            TCPServer.broadcast(this, msgIn.substring(5));
+                            TCPServer.broadcast(this, msgIn);
                             break;
                         //I am alive
                         case "IMAV":

@@ -28,18 +28,19 @@ public class ReceiverClient implements Runnable {
                     run = false;
                 }
 
-                if(msgIn.contains("LIST")){
+                if (msgIn.contains("LIST")) {
                     String[] activeUsers = msgIn.split(" ");
                     String currentlyConnectedUsers = "Currently connected users: [";
                     currentlyConnectedUsers += activeUsers[1];
-                    for (int i = 2; i <= activeUsers.length-1 ; i++) {
-                        currentlyConnectedUsers += ", " +activeUsers[i];
+                    for (int i = 2; i <= activeUsers.length - 1; i++) {
+                        currentlyConnectedUsers += ", " + activeUsers[i];
                     }
-                    System.out.println(currentlyConnectedUsers+"]");
-                }else{
+                    System.out.println(currentlyConnectedUsers + "]");
+                } else if (msgIn.contains("DATA")){
+                    System.out.println(msgIn.substring(5));
+                } else {
                     System.out.print(msgIn + "\n");
                 }
-
 
 
             } catch (IOException e) {
