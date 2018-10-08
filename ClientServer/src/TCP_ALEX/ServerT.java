@@ -48,6 +48,12 @@ public class ServerT implements Runnable {
                 if (msgIn.length() >= 4) {
 //                    System.out.println("["+clientIp+", "+username+"-> IN--->> " + msgIn);
                     //Switch based on command given (EX. JOIN, IMAV, ...)
+//remove anything more than 250 characters
+                    if (msgIn.length() > 250) {
+                        msgIn = msgIn.substring(0, 251);
+                    }
+
+
                     switch (msgIn.substring(0, 4)) {
 
                         //Join chat
@@ -87,7 +93,9 @@ public class ServerT implements Runnable {
 
                         //Message
                         case "DATA":
-                            TCPServer.broadcast(this, msgIn);
+                            //Send this insted of null if you dont want the server to mirror the clients messages to himself
+//                            TCPServer.broadcast(this, msgIn);
+                            TCPServer.broadcast(null, msgIn);
                             break;
                         //I am alive
                         case "IMAV":
@@ -104,12 +112,12 @@ public class ServerT implements Runnable {
                             break;
 
                     }
-                    System.out.println("IN-->> " + msgIn+" [Sender: "+username+", "+clientIp+"]");
+                    System.out.println("IN-->> " + msgIn + " [Sender: " + username + ", " + clientIp + "]");
                 }
 
                 //If socket is closed call quit
             } catch (IOException ex) {
-                    quit();
+                quit();
             }
         }
 

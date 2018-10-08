@@ -6,7 +6,7 @@ public class TCPServerMikkel
 {
     public static void main(String args[]) throws Exception
     {
-        System.out.println("starting TCP Server main program");
+        System.out.println("starting TCP NewServer main program");
         String sentence;
         String userText;
 

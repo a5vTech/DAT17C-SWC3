@@ -7,7 +7,7 @@ import java.net.*;
 import java.util.Scanner;
 
 /**
- * Created by coag on 27-09-2018.
+ * Created by Jesper Tang Petersen.
  */
 public class TCPClient {
     static Socket socket;
@@ -53,7 +53,9 @@ public class TCPClient {
                     try {
                         outAlive.write(dataToSend);
                     } catch (SocketException ex) {
-                        ex.printStackTrace();
+                        System.out.println("Connection lost to server");
+                        System.out.println("Shutting down client");
+                        System.exit(0);
                     }
                 } catch (IOException e) {
                     System.out.println("CLIENT EXCEPTION ");

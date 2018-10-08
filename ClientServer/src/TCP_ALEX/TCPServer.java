@@ -62,7 +62,6 @@ public class TCPServer {
                         clients.get(i).socket.close();
                         clients.remove(temp);
                         TCPServer.broadcast(null, "Currently connected users: " + usernames.toString());
-//                        System.out.println(clients);
                     } catch (IOException e) {
 //                        e.printStackTrace();
                     }

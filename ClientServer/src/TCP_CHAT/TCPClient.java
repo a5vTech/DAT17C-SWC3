@@ -43,6 +43,11 @@ class TCPClient {
             sendToServer.writeBytes("JOIN " + username + ", " + serverIp + ":" + serverPort + '\n');
 
 
+            String reply = receiveFromServer.readLine();
+            if(reply.equals("J_OK")){
+                System.out.println("You joined the chat!");
+            }
+
         } catch (IOException e) {
             e.printStackTrace();
         }
