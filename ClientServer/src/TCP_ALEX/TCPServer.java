@@ -19,6 +19,7 @@ public class TCPServer {
     static Set<String> usernames = new HashSet<>();
     static ArrayList<ServerT> clients = new ArrayList<>();
     static String serverIp = "";
+
     public static void main(String[] args) {
         System.out.println("=============SERVER==============");
 
@@ -77,7 +78,7 @@ public class TCPServer {
         try {
             serverIp = InetAddress.getLocalHost().getHostAddress();
             ServerSocket server = new ServerSocket(PORT_LISTEN);
-            System.out.println("Server starting...\nIP: "+serverIp+"\nPORT: "+ PORT_LISTEN+"\n");
+            System.out.println("Server starting...\nIP: " + serverIp + "\nPORT: " + PORT_LISTEN + "\n");
 
 
             while (true) {
@@ -85,7 +86,7 @@ public class TCPServer {
                 System.out.println("Client connected");
                 String clientIp = socket.getInetAddress().getHostAddress();
                 System.out.println("IP: " + clientIp);
-                System.out.println("PORT: " + socket.getPort()+"\n");
+                System.out.println("PORT: " + socket.getPort() + "\n");
                 ServerT thread = new ServerT(socket, clientIp);
                 Thread client = new Thread(thread);
                 clients.add(thread);
@@ -100,7 +101,19 @@ public class TCPServer {
 
 
     public static Boolean addUser(String username) {
-        return usernames.add(username);
+        Boolean validUsername = false;
+
+        if (username.length() > 12 || !username.matches("[A-Z-ÆØÅa-zæøå0-9_-]+")) {
+            validUsername = false;
+        } else {
+            validUsername = true;
+        }
+
+        if (validUsername && usernames.add(username)) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     public static Boolean removeUser(String username) {

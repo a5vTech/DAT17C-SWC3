@@ -64,10 +64,12 @@ public class ServerT implements Runnable {
                             String ip = msgIn.substring(commaIndex + 2, colonIndex);
                             int port = Integer.parseInt(msgIn.substring(colonIndex + 1));
 
-                            if ((ip.equals(TCPServer.serverIp) || ip.equals("127.0.0.1")) && port == TCPServer.PORT_LISTEN && TCPServer.addUser(username)) {
+                            Boolean usernameAvailable = TCPServer.addUser(username);
+
+                            if ((ip.equals(TCPServer.serverIp) || ip.equals("127.0.0.1")) && port == TCPServer.PORT_LISTEN && usernameAvailable) {
                                 msgToSend = "J_OK";
                             } else {
-                                msgToSend = "J_ER 5:A user with that name already exists!";
+                                msgToSend = "J_ER 5:A user with that name already exists or username is in the wrong format!";
                             }
 
 

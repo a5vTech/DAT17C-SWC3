@@ -39,8 +39,42 @@ public class TCPClient {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        ReceiverClient receiver = new ReceiverClient(socket);
-        Thread read = new Thread(receiver);
+        Thread read = new Thread(() -> {
+            Boolean run = true;
+            while (run) {
+                try {
+                    InputStream input = socket.getInputStream();
+                    byte[] dataIn = new byte[1024];
+                    input.read(dataIn);
+                    String msgIn = new String(dataIn);
+
+                    msgIn = msgIn.trim();
+                    if (msgIn.equals("")) {
+                        run = false;
+                    }
+
+                    if (msgIn.contains("LIST")) {
+                        String[] activeUsers = msgIn.split(" ");
+                        String currentlyConnectedUsers = "Currently connected users: [";
+                        currentlyConnectedUsers += activeUsers[1];
+                        for (int i = 2; i <= activeUsers.length - 1; i++) {
+                            currentlyConnectedUsers += ", " + activeUsers[i];
+                        }
+                        System.out.println(currentlyConnectedUsers + "]");
+                    } else if (msgIn.contains("DATA")) {
+                        System.out.println(msgIn.substring(5));
+                    } else {
+                        System.out.print(msgIn + "\n");
+                    }
+
+
+                } catch (IOException e) {
+//                e.printStackTrace();
+                }
+
+
+            }
+        });
         Thread IMAV = new Thread(() -> {
             while (!socket.isClosed()) {
                 try {
@@ -127,7 +161,6 @@ public class TCPClient {
 
                     output.write(msgToSend.getBytes());
                     System.out.println("Shutting down chat");
-                    socket.close();
                     System.exit(0);
                 }
 
@@ -159,8 +192,9 @@ public class TCPClient {
 
                 verified = true;
             }
-
+            verified = true;
         }
+
         return username;
 
     }
